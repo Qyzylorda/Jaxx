@@ -1,1 +1,11 @@
 /* Add all your styles here */
+img {
+  width: 100%;
+}
+
+.image{
+  width: auto;
+  border-style: solid;
+  border-color: magenta;
+  border-width: 2px;
+}
