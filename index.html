@@ -2,40 +2,48 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Jaxx</title>
+    <title>Roadmap Planner - Создание планов и дорожных карт</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Supherhero">
-    <meta name="keywords" content="programming hero,learn programming">
+    <meta name="author" content="Roadmap Planner">
+    <meta name="keywords" content="roadmap,planning,project management">
     <link rel="shortcut icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
     <!--@bootstrapCss-->
     <link rel="stylesheet" href="css/bootstrap.min.css">
-
+    
     <!--custom css-->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="app">
+
+<!-- Основной контейнер приложения -->
+<div id="app-container">
+    <header class="app-header">
+        <h1>🗺️ Roadmap Planner</h1>
+        <p class="subtitle">Модульное приложение для создания планов, проектов и дорожных карт</p>
+    </header>
     
-
-    <div class="alert alert-primary" role="alert">
-        This is a primary alert—check it out with bootstrap!
+    <!-- Canvas для работы с картой -->
+    <div id="canvas-container">
+        <canvas id="roadmap-canvas"></canvas>
     </div>
-
-</div>
-<div class="image">
-    <img src="img/PXL_20211211_083828986.jpg">
 </div>
 
+<!-- Модули приложения (подключаются по порядку) -->
+<!-- Базовый модуль (обязательный) -->
+<script src="js/modules/object-module.js"></script>
 
+<!-- Опциональные модули (можно закомментировать для отключения) -->
+<script src="js/modules/dragdrop-module.js"></script>
+<script src="js/modules/connection-module.js"></script>
+<script src="js/modules/export-import-module.js"></script>
+<script src="js/modules/ui-module.js"></script>
+<script src="js/modules/module-manager-module.js"></script>
 
-<!--@reactjsWrapper-->
-<script src="js/react.production.min.js"></script>
-<script src="js/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-<script type="text/babel" src ="js/app.js"></script>
+<!-- Основное приложение -->
+<script src="js/app.js"></script>
 
-
-<!--main js-->
+<!-- Дополнительный JS (если нужен) -->
 <script src="js/main.js"></script>
+
 </body>
 </html>
