@@ -1,4 +1,369 @@
 /* Add all your styles here */
+
+/* Основной контейнер */
+#app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Заголовок приложения */
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.app-header .subtitle {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Контейнер canvas */
+#canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+#roadmap-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+/* Toolbar (панель инструментов) */
+.toolbar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 8px;
+  padding: 10px 15px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+  display: flex;
+  gap: 15px;
+  z-index: 1000;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-right: 15px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.toolbar-section:last-child {
+  border-right: none;
+}
+
+.toolbar button {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.toolbar button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.toolbar #zoom-level {
+  font-size: 13px;
+  color: #666;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Панель объектов */
+.object-panel {
+  position: fixed;
+  top: 80px;
+  left: 10px;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.object-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.object-btn {
+  display: block;
+  width: 100%;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.object-btn:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Панель свойств */
+.properties-panel {
+  position: fixed;
+  top: 80px;
+  right: 10px;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 250px;
+}
+
+.properties-panel h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.properties-panel label {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.properties-panel select,
+.properties-panel textarea,
+.properties-panel input[type="number"],
+.properties-panel input[type="color"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.properties-panel input[type="color"] {
+  height: 40px;
+  cursor: pointer;
+}
+
+.properties-panel .delete-btn {
+  margin-top: 15px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+}
+
+.properties-panel .delete-btn:hover {
+  background: #c82333;
+}
+
+#no-selection {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Панель управления модулями */
+.module-manager {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.module-manager h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.module-item {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.module-status {
+  font-size: 16px;
+}
+
+.module-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.module-controls {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.module-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.module-controls button:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.module-controls .btn-enable {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.module-controls .btn-enable:hover {
+  background: #28a745;
+}
+
+.module-controls .btn-disable {
+  background: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.module-controls .btn-disable:hover {
+  background: #ffc107;
+}
+
+.module-controls .btn-remove {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.module-controls .btn-remove:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.required-badge {
+  background: #e2e3e5;
+  color: #383d41;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.module-info {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.module-info p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: #666;
+}
+
+#btn-refresh-modules {
+  margin-top: 10px;
+  width: 100%;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+#btn-refresh-modules:hover {
+  background: #5568d3;
+}
+
+.status-active {
+  color: #28a745;
+}
+
+.status-inactive {
+  color: #dc3545;
+}
+
+.status-disabled {
+  color: #6c757d;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .toolbar {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .object-panel,
+  .properties-panel {
+    position: static;
+    margin: 10px;
+  }
+  
+  .app-header h1 {
+    font-size: 20px;
+  }
+}
+
 img {
   width: 100%;
 }
