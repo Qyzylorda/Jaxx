@@ -341,6 +341,44 @@
   color: #6c757d;
 }
 
+/* Контекстное меню */
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  padding: 8px 0;
+  min-width: 200px;
+  z-index: 10000;
+  border: 1px solid #e0e0e0;
+}
+
+.context-menu-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.context-menu-item:hover {
+  background: #667eea;
+  color: white;
+}
+
+.context-menu-item.danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 8px 0;
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .toolbar {
