@@ -226,17 +226,17 @@ class RoadmapApp {
     
     // Тип объекта (иконка)
     const icon = this.getObjectIcon(obj.type);
-    ctx.font = '16px Arial';
+    ctx.font = 'bold 14px Arial';
     ctx.fillStyle = '#333333';
-    ctx.fillText(icon, obj.x + 10, obj.y + 25);
+    ctx.fillText(icon, obj.x + 10, obj.y + 22);
     
     // Заголовок типа
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 11px Arial';
     ctx.fillStyle = '#666666';
-    ctx.fillText(obj.type, obj.x + 30, obj.y + 25);
+    ctx.fillText(obj.type, obj.x + 32, obj.y + 22);
     
     // Содержимое
-    ctx.font = '14px Arial';
+    ctx.font = '13px Arial';
     ctx.fillStyle = '#000000';
     ctx.textBaseline = 'top';
     
@@ -300,7 +300,8 @@ const ModuleSystem = {
     'ConnectionModule': typeof ConnectionModule !== 'undefined' ? ConnectionModule : null,
     'ExportImportModule': typeof ExportImportModule !== 'undefined' ? ExportImportModule : null,
     'UIModule': typeof UIModule !== 'undefined' ? UIModule : null,
-    'ModuleManagerModule': typeof ModuleManagerModule !== 'undefined' ? ModuleManagerModule : null
+    'ModuleManagerModule': typeof ModuleManagerModule !== 'undefined' ? ModuleManagerModule : null,
+    'ContextMenuModule': typeof ContextMenuModule !== 'undefined' ? ContextMenuModule : null
   },
   
   // Конфигурация подключения модулей
@@ -311,7 +312,8 @@ const ModuleSystem = {
     'ConnectionModule': true,      // Соединения
     'ExportImportModule': true,    // Экспорт/Импорт
     'UIModule': true,              // Пользовательский интерфейс
-    'ModuleManagerModule': true    // Управление модулями
+    'ModuleManagerModule': true,   // Управление модулями
+    'ContextMenuModule': true      // Контекстное меню
   },
   
   // Удаленные модули (помечаются при удалении)

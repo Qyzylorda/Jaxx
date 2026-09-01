@@ -50,20 +50,33 @@ const ModuleManagerModule = {
     const availableModules = window.ModuleSystem.availableModules || {};
     const moduleConfig = window.ModuleSystem.moduleConfig || {};
     const activeModules = this.app.modules || {};
+    const removedModules = window.ModuleSystem.removedModules || [];
     
     for (const [moduleName, moduleClass] of Object.entries(availableModules)) {
       if (!moduleClass) continue;
       
-      const isEnabled = moduleConfig[moduleName] !== false;
+      const isRemoved = removedModules.includes(moduleName);
+      const isEnabled = moduleConfig[moduleName] !== false && !isRemoved;
       const isActive = !!activeModules[moduleName];
       const isRequired = moduleName === 'ObjectModule';
+      
+      const statusClass = isActive ? 'status-active' : (isRemoved ? 'status-disabled' : (isEnabled ? 'status-inactive' : 'status-disabled'));
+      const statusIcon = isActive ? '✅' : (isRemoved ? '⚫' : '🔴');
       
       const moduleItem = document.createElement('div');
       moduleItem.className = 'module-item';
       moduleItem.dataset.module = moduleName;
       
-      const statusClass = isActive ? 'status-active' : (isEnabled ? 'status-inactive' : 'status-disabled');
-      const statusIcon = isActive ? '✅' : (isEnabled ? '🔴' : '⚫');
+      let controlsHtml = '';
+      if (isRequired) {
+        controlsHtml = '<span class="required-badge">Обязательный</span>';
+      } else if (isRemoved) {
+        controlsHtml = '<span class="required-badge">Удален</span>';
+      } else if (isActive) {
+        controlsHtml = '<button class="btn-disable" title="Отключить модуль">⏸️ Выкл</button><button class="btn-remove" title="Удалить модуль">🗑️ Удалить</button>';
+      } else {
+        controlsHtml = '<button class="btn-enable" title="Включить модуль">▶️ Вкл</button><button class="btn-remove" title="Удалить модуль">🗑️ Удалить</button>';
+      }
       
       moduleItem.innerHTML = `
         <div class="module-header">
@@ -71,10 +84,7 @@ const ModuleManagerModule = {
           <span class="module-name">${moduleName}</span>
         </div>
         <div class="module-controls">
-          ${!isRequired && !isActive ? '<button class="btn-enable" title="Включить модуль">▶️ Вкл</button>' : ''}
-          ${!isRequired && isActive ? '<button class="btn-disable" title="Отключить модуль">⏸️ Выкл</button>' : ''}
-          ${!isRequired ? '<button class="btn-remove" title="Удалить модуль">🗑️ Удалить</button>' : ''}
-          ${isRequired ? '<span class="required-badge">Обязательный</span>' : ''}
+          ${controlsHtml}
         </div>
       `;
       
