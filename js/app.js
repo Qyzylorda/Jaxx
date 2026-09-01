@@ -1,50 +1,77 @@
 /**
- * Roadmap Planner - Модульное приложение для создания планов и дорожных карт
+ * Roadmap Planner - Modular application for creating plans and roadmaps
  * 
- * Архитектура:
- * - Основное ядро приложения (RoadmapApp)
- * - Базовый модуль ObjectModule (обязательный)
- * - Опциональные модули: DragDropModule, ConnectionModule, ExportImportModule, UIModule
+ * Architecture:
+ * - Core application (RoadmapApp)
+ * - Base module ObjectModule (required)
+ * - Optional modules: DragDropModule, ConnectionModule, ExportImportModule, UIModule
  * 
- * Модульность:
- * - Каждый модуль независим и может быть подключен/отключен
- * - При отключении опционального модуля приложение продолжает работать
- * - Модули регистрируются в системе и вызываются через единый интерфейс
+ * Modularity:
+ * - Each module is independent and can be enabled/disabled
+ * - Application continues to work when optional modules are disabled
+ * - Modules are registered through a unified interface
+ * 
+ * @version 2.0.0
+ * @author Roadmap Planner Team
  */
 
 // ============================================
-// ЯДРО ПРИЛОЖЕНИЯ
+// CONSTANTS
+// ============================================
+
+const CONFIG = {
+  CANVAS_ID: 'roadmap-canvas',
+  MIN_SCALE: 0.1,
+  MAX_SCALE: 3,
+  GRID_SIZE: 50,
+  DEFAULT_PROJECT_NAME: 'New Project'
+};
+
+const OBJECT_ICONS = {
+  'Заголовок': '📌',
+  'Тема': '📋',
+  'Задача': '✅',
+  'Веха': '🚩',
+  'Заметка': '📝'
+};
+
+const DEFAULT_ICON = '📄';
+
+// ============================================
+// CORE APPLICATION
 // ============================================
 
 class RoadmapApp {
-  constructor(canvasId = 'roadmap-canvas') {
+  constructor(canvasId = CONFIG.CANVAS_ID) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
     
-    // Состояние приложения
+    // Application state
     this.objects = [];
     this.scale = 1;
-    this.projectName = 'Новый проект';
+    this.projectName = CONFIG.DEFAULT_PROJECT_NAME;
     this.projectDescription = '';
     this.author = '';
     
-    // Позиция мыши
+    // Mouse position
     this.mouseX = 0;
     this.mouseY = 0;
     
-    // Зарегистрированные модули
+    // Registered modules
     this.modules = {};
     
-    // Инициализация canvas
+    // Initialize canvas
     if (this.canvas) {
       this.resizeCanvas();
       this.setupCanvasListeners();
     }
     
-    console.log('[RoadmapApp] Ядро приложения инициализировано');
+    console.log('[RoadmapApp] Core application initialized');
   }
   
-  // Изменение размера canvas
+  /**
+   * Resize canvas to fit container
+   */
   resizeCanvas() {
     if (!this.canvas) return;
     
@@ -54,7 +81,9 @@ class RoadmapApp {
     this.render();
   }
   
-  // Настройка обработчиков canvas
+  /**
+   * Setup canvas event listeners
+   */
   setupCanvasListeners() {
     window.addEventListener('resize', () => this.resizeCanvas());
     
@@ -64,22 +93,35 @@ class RoadmapApp {
       this.mouseY = (e.clientY - rect.top) / this.scale;
     });
     
-    // Колесо мыши для зума
+    // Zoom with mouse wheel
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      this.scale = Math.max(0.1, Math.min(3, this.scale + delta));
-      if (document.getElementById('zoom-level')) {
-        document.getElementById('zoom-level').textContent = Math.round(this.scale * 100) + '%';
-      }
+      this.scale = Math.max(CONFIG.MIN_SCALE, Math.min(CONFIG.MAX_SCALE, this.scale + delta));
+      this.updateZoomDisplay();
       this.render();
     });
   }
   
-  // Регистрация модуля
+  /**
+   * Update zoom level display in UI
+   */
+  updateZoomDisplay() {
+    const zoomElement = document.getElementById('zoom-level');
+    if (zoomElement) {
+      zoomElement.textContent = Math.round(this.scale * 100) + '%';
+    }
+  }
+  
+  /**
+   * Register a module with the application
+   * @param {string} name - Module name
+   * @param {Object} module - Module object with init method
+   * @returns {boolean} True if registration successful
+   */
   registerModule(name, module) {
     if (!module || !module.init) {
-      console.warn(`[RoadmapApp] Модуль "${name}" некорректен`);
+      console.warn(`[RoadmapApp] Module "${name}" is invalid`);
       return false;
     }
     
@@ -87,35 +129,43 @@ class RoadmapApp {
       const result = module.init(this);
       if (result !== false) {
         this.modules[name] = module;
-        console.log(`[RoadmapApp] Модуль "${name}" зарегистрирован`);
+        console.log(`[RoadmapApp] Module "${name}" registered`);
         return true;
       } else {
-        console.warn(`[RoadmapApp] Модуль "${name}" не активирован`);
+        console.warn(`[RoadmapApp] Module "${name}" not activated`);
         return false;
       }
     } catch (e) {
-      console.error(`[RoadmapApp] Ошибка регистрации модуля "${name}":`, e);
+      console.error(`[RoadmapApp] Error registering module "${name}":`, e);
       return false;
     }
   }
   
-  // Отключение модуля
+  /**
+   * Unregister/remove a module from the application
+   * @param {string} name - Module name
+   * @returns {boolean} True if unregistration successful
+   */
   unregisterModule(name) {
     if (this.modules[name]) {
       if (this.modules[name].destroy) {
         this.modules[name].destroy();
       }
       delete this.modules[name];
-      console.log(`[RoadmapApp] Модуль "${name}" отключен`);
+      console.log(`[RoadmapApp] Module "${name}" unregistered`);
       return true;
     }
     return false;
   }
   
-  // Добавление объекта
+  /**
+   * Add an object to the canvas
+   * @param {Object} obj - Object to add
+   * @returns {boolean} True if addition successful
+   */
   addObject(obj) {
     if (!obj || !obj.id) {
-      console.error('[RoadmapApp] Некорректный объект');
+      console.error('[RoadmapApp] Invalid object');
       return false;
     }
     this.objects.push(obj);
@@ -123,9 +173,14 @@ class RoadmapApp {
     return true;
   }
   
-  // Поиск объекта по координатам
+  /**
+   * Find object at specified coordinates
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @returns {Object|null} Found object or null
+   */
   findObjectAt(x, y) {
-    // Ищем с конца массива (верхние объекты приоритетнее)
+    // Search from end of array (top objects have priority)
     for (let i = this.objects.length - 1; i >= 0; i--) {
       const obj = this.objects[i];
       if (x >= obj.x && x <= obj.x + obj.width &&
@@ -136,7 +191,10 @@ class RoadmapApp {
     return null;
   }
   
-  // Перемещение объекта на передний план
+  /**
+   * Bring object to front (top of z-order)
+   * @param {string} objId - Object ID
+   */
   bringToFront(objId) {
     const index = this.objects.findIndex(o => o.id === objId);
     if (index !== -1) {
@@ -146,37 +204,54 @@ class RoadmapApp {
     }
   }
   
-  // Отрисовка всего приложения
+  /**
+   * Send object to back (bottom of z-order)
+   * @param {string} objId - Object ID
+   */
+  sendToBack(objId) {
+    const index = this.objects.findIndex(o => o.id === objId);
+    if (index !== -1) {
+      const obj = this.objects.splice(index, 1)[0];
+      this.objects.unshift(obj);
+      this.render();
+    }
+  }
+  
+  /**
+   * Render the entire application
+   */
   render() {
     if (!this.ctx) return;
     
-    // Очистка canvas
+    // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Сохраняем состояние контекста
+    // Save context state
     this.ctx.save();
     
-    // Применяем масштабирование
+    // Apply scaling
     this.ctx.scale(this.scale, this.scale);
     
-    // Рисуем сетку
+    // Draw grid
     this.drawGrid();
     
-    // Рисуем соединения (если модуль подключен)
+    // Draw connections (if ConnectionModule is loaded)
     if (this.modules.ConnectionModule && this.modules.ConnectionModule.render) {
       this.modules.ConnectionModule.render(this.ctx);
     }
     
-    // Рисуем объекты
+    // Draw objects
     this.objects.forEach(obj => this.drawObject(obj));
     
-    // Восстанавливаем состояние контекста
+    // Restore context state
     this.ctx.restore();
   }
   
-  // Рисование сетки
+  /**
+   * Draw grid background
+   */
   drawGrid() {
-    const gridSize = 50;
+    const gridSize = CONFIG.GRID_SIZE;
     const width = this.canvas.width / this.scale;
     const height = this.canvas.height / this.scale;
     
@@ -184,13 +259,13 @@ class RoadmapApp {
     this.ctx.strokeStyle = '#E0E0E0';
     this.ctx.lineWidth = 1;
     
-    // Вертикальные линии
+    // Vertical lines
     for (let x = 0; x < width; x += gridSize) {
       this.ctx.moveTo(x, 0);
       this.ctx.lineTo(x, height);
     }
     
-    // Горизонтальные линии
+    // Horizontal lines
     for (let y = 0; y < height; y += gridSize) {
       this.ctx.moveTo(0, y);
       this.ctx.lineTo(width, y);
@@ -199,43 +274,46 @@ class RoadmapApp {
     this.ctx.stroke();
   }
   
-  // Рисование объекта
+  /**
+   * Draw an object on the canvas
+   * @param {Object} obj - Object to draw
+   */
   drawObject(obj) {
     const ctx = this.ctx;
     
-    // Тень
+    // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
     ctx.shadowBlur = 5;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
     
-    // Фон объекта
+    // Background
     ctx.fillStyle = obj.color || '#FFFFFF';
     ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
     
-    // Сброс тени
+    // Reset shadow
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     
-    // Рамка
+    // Border
     ctx.strokeStyle = obj.selected ? '#007BFF' : '#333333';
     ctx.lineWidth = obj.selected ? 3 : 1;
     ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
     
-    // Тип объекта (иконка)
+    // Icon based on type
     const icon = this.getObjectIcon(obj.type);
     ctx.font = 'bold 14px Arial';
     ctx.fillStyle = '#333333';
     ctx.fillText(icon, obj.x + 10, obj.y + 22);
     
-    // Заголовок типа
+    // Type label
     ctx.font = 'bold 11px Arial';
     ctx.fillStyle = '#666666';
     ctx.fillText(obj.type, obj.x + 32, obj.y + 22);
     
-    // Содержимое
+    // Content text
     ctx.font = '13px Arial';
     ctx.fillStyle = '#000000';
     ctx.textBaseline = 'top';
@@ -243,7 +321,7 @@ class RoadmapApp {
     const text = this.wrapText(obj.content || '', obj.width - 20);
     ctx.fillText(text, obj.x + 10, obj.y + 35);
     
-    // Индикатор выделения
+    // Selection indicator
     if (obj.selected) {
       ctx.strokeStyle = '#007BFF';
       ctx.lineWidth = 2;
@@ -253,19 +331,21 @@ class RoadmapApp {
     }
   }
   
-  // Иконка для типа объекта
+  /**
+   * Get icon for object type
+   * @param {string} type - Object type
+   * @returns {string} Icon emoji
+   */
   getObjectIcon(type) {
-    const icons = {
-      'Заголовок': '📌',
-      'Тема': '📋',
-      'Задача': '✅',
-      'Веха': '🚩',
-      'Заметка': '📝'
-    };
-    return icons[type] || '📄';
+    return OBJECT_ICONS[type] || DEFAULT_ICON;
   }
   
-  // Перенос текста
+  /**
+   * Wrap text to fit within specified width
+   * @param {string} text - Text to wrap
+   * @param {number} maxWidth - Maximum width in pixels
+   * @returns {string} Wrapped text with newlines
+   */
   wrapText(text, maxWidth) {
     const words = text.split(' ');
     let lines = [];
@@ -289,11 +369,11 @@ class RoadmapApp {
 }
 
 // ============================================
-// СИСТЕМА МОДУЛЕЙ
+// MODULE SYSTEM
 // ============================================
 
 const ModuleSystem = {
-  // Список доступных модулей
+  // List of available modules
   availableModules: {
     'ObjectModule': typeof ObjectModule !== 'undefined' ? ObjectModule : null,
     'DragDropModule': typeof DragDropModule !== 'undefined' ? DragDropModule : null,
@@ -304,119 +384,139 @@ const ModuleSystem = {
     'ContextMenuModule': typeof ContextMenuModule !== 'undefined' ? ContextMenuModule : null
   },
   
-  // Конфигурация подключения модулей
-  // true = подключить, false = не подключать
+  // Module configuration (true = enabled, false = disabled)
   moduleConfig: {
-    'ObjectModule': true,          // Обязательный модуль
-    'DragDropModule': true,        // Перетаскивание
-    'ConnectionModule': true,      // Соединения
-    'ExportImportModule': true,    // Экспорт/Импорт
-    'UIModule': true,              // Пользовательский интерфейс
-    'ModuleManagerModule': true,   // Управление модулями
-    'ContextMenuModule': true      // Контекстное меню
+    'ObjectModule': true,          // Required module
+    'DragDropModule': true,        // Drag and drop
+    'ConnectionModule': true,      // Connections
+    'ExportImportModule': true,    // Export/Import
+    'UIModule': true,              // User interface
+    'ModuleManagerModule': true,   // Module management
+    'ContextMenuModule': true      // Context menu
   },
   
-  // Удаленные модули (помечаются при удалении)
+  // Removed modules list
   removedModules: [],
   
-  // Инициализация системы модулей
+  /**
+   * Initialize the module system
+   * @param {RoadmapApp} app - Application instance
+   * @returns {number} Number of initialized modules
+   */
   init: function(app) {
-    console.log('[ModuleSystem] Инициализация системы модулей...');
+    console.log('[ModuleSystem] Initializing module system...');
     
     let initializedCount = 0;
     
-    // Проходим по всем модулям согласно конфигурации
+    // Initialize modules according to config
     for (const [name, enabled] of Object.entries(this.moduleConfig)) {
       if (enabled && this.availableModules[name]) {
         app.registerModule(name, this.availableModules[name]);
         initializedCount++;
       } else if (enabled && !this.availableModules[name]) {
-        console.warn(`[ModuleSystem] Модуль "${name}" включен в конфиге, но не найден`);
+        console.warn(`[ModuleSystem] Module "${name}" is enabled in config but not found`);
       }
     }
     
-    console.log(`[ModuleSystem] Инициализировано модулей: ${initializedCount}`);
+    console.log(`[ModuleSystem] Initialized ${initializedCount} modules`);
     return initializedCount;
   },
   
-  // Включить модуль
+  /**
+   * Enable a module
+   * @param {string} name - Module name
+   * @returns {boolean} True if successful
+   */
   enableModule: function(name) {
     if (this.removedModules && this.removedModules.includes(name)) {
-      console.warn(`[ModuleSystem] Модуль "${name}" был удален и не может быть включен без перезагрузки страницы`);
+      console.warn(`[ModuleSystem] Module "${name}" was removed and cannot be enabled without page reload`);
       return false;
     }
     this.moduleConfig[name] = true;
-    console.log(`[ModuleSystem] Модуль "${name}" помечен для включения`);
+    console.log(`[ModuleSystem] Module "${name}" marked for enabling`);
     return true;
   },
   
-  // Выключить модуль
+  /**
+   * Disable a module
+   * @param {string} name - Module name
+   * @returns {boolean} True if successful
+   */
   disableModule: function(name) {
     if (name === 'ObjectModule') {
-      console.warn('[ModuleSystem] Нельзя отключить ObjectModule - это базовый модуль');
+      console.warn('[ModuleSystem] Cannot disable ObjectModule - it is a required module');
       return false;
     }
     this.moduleConfig[name] = false;
-    console.log(`[ModuleSystem] Модуль "${name}" помечен для отключения`);
+    console.log(`[ModuleSystem] Module "${name}" marked for disabling`);
     return true;
   },
   
-  // Проверка, удален ли модуль
+  /**
+   * Check if a module is removed
+   * @param {string} name - Module name
+   * @returns {boolean} True if module is removed
+   */
   isModuleRemoved: function(name) {
     return this.removedModules && this.removedModules.includes(name);
   }
 };
 
 // ============================================
-// ТОЧКА ВХОДА
+// ENTRY POINT
 // ============================================
 
-// Глобальная переменная для приложения
+// Global application instance
 let app = null;
 
-// Инициализация при загрузке страницы
+/**
+ * Initialize the Roadmap Planner application
+ * @returns {RoadmapApp} Application instance
+ */
 function initRoadmapApp() {
   console.log('=== Roadmap Planner ===');
-  console.log('Инициализация приложения...');
+  console.log('Initializing application...');
   
-  // Создаем экземпляр приложения
-  app = new RoadmapApp('roadmap-canvas');
+  // Create application instance
+  app = new RoadmapApp(CONFIG.CANVAS_ID);
   
-  // Инициализируем систему модулей
+  // Initialize module system
   ModuleSystem.init(app);
   
-  // Добавляем демо-объекты для примера
+  // Add demo objects
   addDemoObjects();
   
-  console.log('Приложение готово к работе!');
-  console.log('Доступные модули:', Object.keys(app.modules));
+  console.log('Application ready!');
+  console.log('Available modules:', Object.keys(app.modules));
   
   return app;
 }
 
-// Добавление демо-объектов
+/**
+ * Add demo objects for demonstration
+ */
 function addDemoObjects() {
   if (!app || !window.ObjectModule) return;
   
-  // Создаем несколько объектов для демонстрации
-  const titleObj = window.ObjectModule.createObject('Заголовок', 'Мой Проект', 100, 80);
+  // Create demo objects
+  const titleObj = window.ObjectModule.createObject('Заголовок', 'My Project', 100, 80);
   titleObj.width = 250;
   titleObj.height = 80;
   app.addObject(titleObj);
   
-  const topicObj = window.ObjectModule.createObject('Тема', 'Планирование этапов', 100, 200);
+  const topicObj = window.ObjectModule.createObject('Тема', 'Planning Stages', 100, 200);
   app.addObject(topicObj);
   
-  const taskObj1 = window.ObjectModule.createObject('Задача', 'Анализ требований', 400, 180);
+  const taskObj1 = window.ObjectModule.createObject('Задача', 'Requirements Analysis', 400, 180);
   app.addObject(taskObj1);
   
-  const taskObj2 = window.ObjectModule.createObject('Задача', 'Разработка прототипа', 400, 300);
+  const taskObj2 = window.ObjectModule.createObject('Задача', 'Prototype Development', 400, 300);
   app.addObject(taskObj2);
   
-  const milestoneObj = window.ObjectModule.createObject('Веха', 'Запуск версии 1.0', 700, 250);
+  const milestoneObj = window.ObjectModule.createObject('Веха', 'Launch Version 1.0', 700, 250);
   app.addObject(milestoneObj);
   
-  // Если модуль соединений подключен, создаем соединения
+  // Create connections if ConnectionModule is available
   if (app.modules.ConnectionModule) {
     window.ConnectionModule.createConnection(topicObj.id, taskObj1.id);
     window.ConnectionModule.createConnection(taskObj1.id, taskObj2.id);
@@ -426,12 +526,12 @@ function addDemoObjects() {
   app.render();
 }
 
-// Запускаем приложение после загрузки DOM
+// Initialize application when DOM is loaded
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', initRoadmapApp);
 }
 
-// Делаем приложение доступным глобально
+// Export to global scope
 if (typeof window !== 'undefined') {
   window.RoadmapApp = RoadmapApp;
   window.ModuleSystem = ModuleSystem;
